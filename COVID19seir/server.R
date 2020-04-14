@@ -33,10 +33,10 @@ function(input, output, session) {
     #combine exposed classes for plotting
     out.df$E0=out.df$E0+out.df$E1
     out.df$E1=NULL
-    out.df=rename(out.df, c(E0="E"))
+    out.df=reshape::rename(out.df, c(E0="E"))
     
     #reformat data for plotting
-    out.df2=rename(out.df, c(S="Susceptible", E="Exposed", I0="Infected.NoSymptoms", I1="Infected.Mild", I2="Infected.Severe", I3="Infected.Critical", R="Recovered", D="Dead"))
+    out.df2=reshape::rename(out.df, c(S="Susceptible", E="Exposed", I0="Infected.NoSymptoms", I1="Infected.Mild", I2="Infected.Severe", I3="Infected.Critical", R="Recovered", D="Dead"))
     out=melt(out.df,id="time")
     out2=melt(out.df2,id="time")
     out$variableName=out2$variable
@@ -46,12 +46,12 @@ function(input, output, session) {
     #create data for plotting total infected
     Comb.df=out.df
     Comb.df$I0=rowSums(out.df[,c("I0","I1","I2","I3")]) # create total infected
-    Comb.df=rename(Comb.df, c(I0="I"))
+    Comb.df=reshape::rename(Comb.df, c(I0="I"))
     Comb.df$I1=NULL
     Comb.df$I2=NULL
     Comb.df$I3=NULL
     
-    Comb.df2=rename(Comb.df, c(S="Susceptible", E="Exposed", I="Infected", R="Recovered", D="Dead"))
+    Comb.df2=reshape::rename(Comb.df, c(S="Susceptible", E="Exposed", I="Infected", R="Recovered", D="Dead"))
     Comb=melt(Comb.df,id="time")
     Comb2=melt(Comb.df2,id="time")
     Comb$variableName=Comb2$variable
@@ -122,7 +122,7 @@ function(input, output, session) {
     #combine exposed classes for plotting
     out.df$E0=out.df$E0+out.df$E1
     out.df$E1=NULL
-    out.df=rename(out.df, c(E0="E"))
+    out.df=reshape::rename(out.df, c(E0="E"))
     
     simInt=SimSEIRintB(input)
     
@@ -134,7 +134,7 @@ function(input, output, session) {
     #combine exposed classes for plotting
     outInt.df$E0=outInt.df$E0+outInt.df$E1
     outInt.df$E1=NULL
-    outInt.df=rename(outInt.df, c(E0="E"))
+    outInt.df=reshape::rename(outInt.df, c(E0="E"))
     
     if(input$VarShowInt=="Inf"){
       
@@ -199,7 +199,7 @@ function(input, output, session) {
     #combine exposed classes for plotting
     out.df$E0=out.df$E0+out.df$E1
     out.df$E1=NULL
-    out.df=rename(out.df, c(E0="E"))
+    out.df=reshape::rename(out.df, c(E0="E"))
     
     simInt=SimSEIRintB(input)
     
@@ -211,7 +211,7 @@ function(input, output, session) {
     #combine exposed classes for plotting
     outInt.df$E0=outInt.df$E0+outInt.df$E1
     outInt.df$E1=NULL
-    outInt.df=rename(outInt.df, c(E0="E"))
+    outInt.df=reshape::rename(outInt.df, c(E0="E"))
     
     Tmax=input$Tmax
     
