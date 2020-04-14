@@ -1,6 +1,9 @@
 library(deSolve)
 library(reshape)
 library(googlesheets4)
+library(dplyr)
+library(tidyr)
+library(magrittr)
 sheets_deauth()
 source("code/functions.R")
 
@@ -8,10 +11,10 @@ source("code/functions.R")
 # Load data:
 # --------------------
 
+# TODO: update to get SA hosp data
 HospDataAll=read_sheet("https://docs.google.com/spreadsheets/d/1zZKKnZ47lqfmUGYDQuWNnzKnh-IDMy15LBaRmrBcjqE/edit#gid=1585003222",sheet="Hospital capacity")
 HospDataAll=na.omit(HospDataAll)
 hdata = as.data.frame(t(data.frame(HospDataAll[,c("Name","Value")], row.names="Name")))
-
 
 function(input, output, session) {
   
@@ -88,6 +91,21 @@ function(input, output, session) {
     p
 
   })
+
+  datasetSpread <- reactive({
+    sim=SimSEIR(input)
+    
+    spread_data = sim$out.df
+  })
+
+  output$downloadDataSpread <- downloadHandler(
+    filename = function() {
+      paste('spread_data-', Sys.Date(), '.csv', sep='')
+    },
+    content = function(con) {
+      write.csv(datasetSpread(), con)
+    }
+  )
   
   #Plot timecourse with an intervention
   
@@ -278,6 +296,21 @@ function(input, output, session) {
     p
     
   })
+
+  datasetIntervention <- reactive({
+    simInt=SimSEIRintB(input)
+    intervention_data = simInt$out.df
+  })
+
+  output$downloadDataIntervention <- downloadHandler(
+    filename = function() {
+      paste('intervention_data-', Sys.Date(), '.csv', sep='')
+    },
+    content = function(con) {
+      write.csv(datasetIntervention(), con)
+    }
+  )
+
   
   # Show the rate parameter values using an HTML table
   output$ParameterTable <-renderTable(
@@ -384,7 +417,67 @@ function(input, output, session) {
   # Return the case fatality rate to the user as the % severe infections is changed
   
   output$CFR <- renderText({ 
-    CFR=(input$ProbDeath/100)*(input$FracCritical)
+    prop0to9 = input$prop0to9
+    prop10to19 = input$prop10to19
+    prop20to29 = input$prop20to29
+    prop30to39 = input$prop30to39
+    prop40to49 = input$prop40to49
+    prop50to59 = input$prop50to59
+    prop60to69 = input$prop60to69
+    prop70to79 = input$prop70to79
+    prop80p = input$prop80p
+    prop_all = c(prop0to9,
+                 prop10to19,
+                 prop20to29,
+                 prop30to39,
+                 prop40to49,
+                 prop50to59,
+                 prop60to69,
+                 prop70to79,
+                 prop80p)
+    
+    ProbDeath0to9 = input$ProbDeath0to9
+    ProbDeath10to19 = input$ProbDeath10to19
+    ProbDeath20to29 = input$ProbDeath20to29
+    ProbDeath30to39 = input$ProbDeath30to39
+    ProbDeath40to49 = input$ProbDeath40to49
+    ProbDeath50to59 = input$ProbDeath50to59
+    ProbDeath60to69 = input$ProbDeath60to69
+    ProbDeath70to79 = input$ProbDeath70to79
+    ProbDeath80p = input$ProbDeath80p
+    ProbDeath_all = c(ProbDeath0to9,
+                      ProbDeath10to19,
+                      ProbDeath20to29,
+                      ProbDeath30to39,
+                      ProbDeath40to49,
+                      ProbDeath50to59,
+                      ProbDeath60to69,
+                      ProbDeath70to79,
+                      ProbDeath80p)
+    FracCritical0to9 = input$FracCritical0to9
+    FracCritical10to19 = input$FracCritical10to19
+    FracCritical20to29 = input$FracCritical20to29
+    FracCritical30to39 = input$FracCritical30to39
+    FracCritical40to49 = input$FracCritical40to49
+    FracCritical50to59 = input$FracCritical50to59
+    FracCritical60to69 = input$FracCritical60to69
+    FracCritical70to79 = input$FracCritical70to79
+    FracCritical80p = input$FracCritical80p
+    FracCritical_all = c(FracCritical0to9,
+                         FracCritical10to19,
+                         FracCritical20to29,
+                         FracCritical30to39,
+                         FracCritical40to49,
+                         FracCritical50to59,
+                         FracCritical60to69,
+                         FracCritical70to79,
+                         FracCritical80p)
+    
+    CFR = 0
+    for (i in 1:length(ProbDeath_all)){
+      CFR = CFR + (prop_all[i]/100) * ((ProbDeath_all[i]/100)*FracCritical_all[i])
+    }
+
     HTML(paste("<b> Case fatality ratio:</b>",CFR,"%"))
   })
   
@@ -417,10 +510,10 @@ function(input, output, session) {
   })
   
   #make sure the fraction of individuals in each stage of infection sums to 100%
-  observeEvent(input$FracSevere,  {
-    maxFracCritical=100-input$FracSevere
-    updateSliderInput(session = session, inputId = "FracCritical", max = maxFracCritical)
-  })
+  #observeEvent(input$FracSevere,  {
+  #  maxFracCritical=100-input$FracSevere
+  #  updateSliderInput(session = session, inputId = "FracCritical", max = maxFracCritical)
+  #})
   
   #Make sure the part of the incubation period that leads to transmission is less than total incubation period
   observeEvent(input$IncubPeriod,  {
@@ -491,12 +584,78 @@ function(input, output, session) {
   # Reset all parameters if the RESET button is pushed
   observeEvent(input$reset,{
     updateSliderInput(session,'IncubPeriod',value = 5)
-    updateSliderInput(session,'DurMildInf',value = 6)
-    updateSliderInput(session,'FracSevere',value = 15)
-    updateSliderInput(session,'FracCritical',value = 6)
-    updateSliderInput(session,'ProbDeath',value = 40)
-    updateSliderInput(session,'DurHosp',value = 6)
-    updateSliderInput(session,'TimeICUDeath',value = 8)
+
+    updateNumericInput(session, "FracSevere0to9", value = 0.2)
+    updateNumericInput(session, "FracSevere10to19", value = 0.61)
+    updateNumericInput(session, "FracSevere20to29", value = 2.44)
+    updateNumericInput(session, "FracSevere30to39", value = 6.51)
+    updateNumericInput(session, "FracSevere40to49", value = 9.97)
+    updateNumericInput(session, "FracSevere50to59", value = 20.75)
+    updateNumericInput(session, "FracSevere60to69", value = 33.77)
+    updateNumericInput(session, "FracSevere70to79", value = 49.43)
+    updateNumericInput(session, "FracSevere80p", value = 55.53)
+
+    updateNumericInput(session, "FracCritical0to9", value = 0.87)
+    updateNumericInput(session, "FracCritical10to19", value = 0.87)
+    updateNumericInput(session, "FracCritical20to29", value = 0.87)
+    updateNumericInput(session, "FracCritical30to39", value = 0.87)
+    updateNumericInput(session, "FracCritical40to49", value = 1.1)
+    updateNumericInput(session, "FracCritical50to59", value = 2.13)
+    updateNumericInput(session, "FracCritical60to69", value = 4.77)
+    updateNumericInput(session, "FracCritical70to79", value = 7.53)
+    updateNumericInput(session, "FracCritical80p", value = 12.35)
+
+    updateNumericInput(session, "ProbDeath0to9", value = 0.19)
+    updateNumericInput(session, "ProbDeath10to19", value = 17.49)
+    updateNumericInput(session, "ProbDeath20to29", value = 31.1)
+    updateNumericInput(session, "ProbDeath30to39", value = 31.1)
+    updateNumericInput(session, "ProbDeath40to49", value = 31.1)
+    updateNumericInput(session, "ProbDeath50to59", value = 51.78)
+    updateNumericInput(session, "ProbDeath60to69", value = 63.85)
+    updateNumericInput(session, "ProbDeath70to79", value = 89.99)
+    updateNumericInput(session, "ProbDeath80p", value = 95)
+
+    updateNumericInput(session, "DurMildInf0to9", value = 6)
+    updateNumericInput(session, "DurMildInf10to19", value = 6)
+    updateNumericInput(session, "DurMildInf20to29", value = 6)
+    updateNumericInput(session, "DurMildInf30to39", value = 6)
+    updateNumericInput(session, "DurMildInf40to49", value = 6)
+    updateNumericInput(session, "DurMildInf50to59", value = 6)
+    updateNumericInput(session, "DurMildInf60to69", value = 6)
+    updateNumericInput(session, "DurMildInf70to79", value = 6)
+    updateNumericInput(session, "DurMildInf80p", value = 6)
+
+    updateNumericInput(session, "DurHosp0to9", value = 4)
+    updateNumericInput(session, "DurHosp10to19", value = 4)
+    updateNumericInput(session, "DurHosp20to29", value = 4)
+    updateNumericInput(session, "DurHosp30to39", value = 4)
+    updateNumericInput(session, "DurHosp40to49", value = 4)
+    updateNumericInput(session, "DurHosp50to59", value = 4)
+    updateNumericInput(session, "DurHosp60to69", value = 4)
+    updateNumericInput(session, "DurHosp70to79", value = 4)
+    updateNumericInput(session, "DurHosp80p", value = 4)
+
+    updateNumericInput(session, "TimeICUDeath0to9", value = 10)
+    updateNumericInput(session, "TimeICUDeath10to19", value = 10)
+    updateNumericInput(session, "TimeICUDeath20to29", value = 10)
+    updateNumericInput(session, "TimeICUDeath30to39", value = 10)
+    updateNumericInput(session, "TimeICUDeath40to49", value = 10)
+    updateNumericInput(session, "TimeICUDeath50to59", value = 10)
+    updateNumericInput(session, "TimeICUDeath60to69", value = 10)
+    updateNumericInput(session, "TimeICUDeath70to79", value = 10)
+    updateNumericInput(session, "TimeICUDeath80p", value = 10)
+
+    updateNumericInput(session, "prop0to9", value = 19.5)
+    updateNumericInput(session, "prop10to19", value = 17.2)
+    updateNumericInput(session, "prop20to29", value = 17.8)
+    updateNumericInput(session, "prop30to39", value = 17.2)
+    updateNumericInput(session, "prop40to49", value = 11.3)
+    updateNumericInput(session, "prop50to59", value = 8)
+    updateNumericInput(session, "prop60to69", value = 5.4)
+    updateNumericInput(session, "prop70to79", value = 2.6)
+    updateNumericInput(session, "prop80p", value = 1)
+
+
     updateSliderInput(session,'b1',value = 0.5)
     updateSliderInput(session,'b2',value = 0.1)
     updateSliderInput(session,'b3',value = 0.1)

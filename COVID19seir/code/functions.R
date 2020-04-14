@@ -68,15 +68,188 @@ GetSpread_SEIR = function(p,Tmax,y0){
 GetModelParams = function(input){
   
   IncubPeriod=input$IncubPeriod  #Incubation period, days
-  DurMildInf=input$DurMildInf #Duration of mild infections, days
-  FracSevere=input$FracSevere/100 #Fraction of infections that are severe
-  FracCritical=input$FracCritical/100 #Fraction of infections that are critical
-  FracMild=1-FracSevere-FracCritical  #Fraction of infections that are mild
-  ProbDeath=input$ProbDeath  #Probability of dying given critical infection
-  CFR=ProbDeath*FracCritical/100 #Case fatality rate (fraction of infections resulting in death)
-  TimeICUDeath=input$TimeICUDeath #Time from ICU admission to death, days
-  DurHosp=input$DurHosp #Duration of hospitalization, days
   
+    # proportions
+  prop0to9 = input$prop0to9/100
+  prop10to19 = input$prop10to19/100
+  prop20to29 = input$prop20to29/100
+  prop30to39 = input$prop30to39/100
+  prop40to49 = input$prop40to49/100
+  prop50to59 = input$prop50to59/100
+  prop60to69 = input$prop60to69/100
+  prop70to79 = input$prop70to79/100
+  prop80p = input$prop80p/100
+  prop_all = c(prop0to9,
+               prop10to19,
+               prop20to29,
+               prop30to39,
+               prop40to49,
+               prop50to59,
+               prop60to69,
+               prop70to79,
+               prop80p)
+  
+  #DurMildInf=input$DurMildInf #Duration of mild infections, days
+  DurMildInf0to9 = input$DurMildInf0to9
+  DurMildInf10to19 = input$DurMildInf10to19
+  DurMildInf20to29 = input$DurMildInf20to29
+  DurMildInf30to39 = input$DurMildInf30to39
+  DurMildInf40to49 = input$DurMildInf40to49
+  DurMildInf50to59 = input$DurMildInf50to59
+  DurMildInf60to69 = input$DurMildInf60to69
+  DurMildInf70to79 = input$DurMildInf70to79
+  DurMildInf80p = input$DurMildInf80p
+  DurMildInf_all = c(DurMildInf0to9,
+                     DurMildInf10to19,
+                     DurMildInf20to29,
+                     DurMildInf30to39,
+                     DurMildInf40to49,
+                     DurMildInf50to59,
+                     DurMildInf60to69,
+                     DurMildInf70to79,
+                     DurMildInf80p)
+
+    #FracSevere=input$FracSevere/100 #Fraction of infections that are severe
+  FracSevere0to9 = input$FracSevere0to9/100
+  FracSevere10to19 = input$FracSevere10to19/100
+  FracSevere20to29 = input$FracSevere20to29/100
+  FracSevere30to39 = input$FracSevere30to39/100
+  FracSevere40to49 = input$FracSevere40to49/100
+  FracSevere50to59 = input$FracSevere50to59/100
+  FracSevere60to69 = input$FracSevere60to69/100
+  FracSevere70to79 = input$FracSevere70to79/100
+  FracSevere80p = input$FracSevere80p/100
+  FracSevere_all = c(FracSevere0to9,
+                     FracSevere10to19,
+                     FracSevere20to29,
+                     FracSevere30to39,
+                     FracSevere40to49,
+                     FracSevere50to59,
+                     FracSevere60to69,
+                     FracSevere70to79,
+                     FracSevere80p)
+  
+  
+  #FracCritical=input$FracCritical/100 #Fraction of infections that are critical
+  FracCritical0to9 = input$FracCritical0to9/100
+  FracCritical10to19 = input$FracCritical10to19/100
+  FracCritical20to29 = input$FracCritical20to29/100
+  FracCritical30to39 = input$FracCritical30to39/100
+  FracCritical40to49 = input$FracCritical40to49/100
+  FracCritical50to59 = input$FracCritical50to59/100
+  FracCritical60to69 = input$FracCritical60to69/100
+  FracCritical70to79 = input$FracCritical70to79/100
+  FracCritical80p = input$FracCritical80p/100
+  FracCritical_all = c(FracCritical0to9,
+                       FracCritical10to19,
+                       FracCritical20to29,
+                       FracCritical30to39,
+                       FracCritical40to49,
+                       FracCritical50to59,
+                       FracCritical60to69,
+                       FracCritical70to79,
+                       FracCritical80p)
+  
+  #FracMild=1-FracSevere-FracCritical  #Fraction of infections that are mild
+  FracMild0to9 = 1 - FracSevere0to9 - FracCritical0to9
+  FracMild10to19 = 1 - FracSevere10to19 - FracCritical10to19
+  FracMild20to29 = 1 - FracSevere20to29 - FracCritical20to29
+  FracMild30to39 = 1 - FracSevere30to39 - FracCritical30to39
+  FracMild40to49 = 1 - FracSevere40to49 - FracCritical40to49
+  FracMild50to59 = 1 - FracSevere50to59 - FracCritical50to59
+  FracMild60to69 = 1 - FracSevere60to69 - FracCritical60to69
+  FracMild70to79 = 1 - FracSevere70to79 - FracCritical70to79
+  FracMild80p = 1 - FracSevere80p - FracCritical80p
+  FracMild_all = c(FracMild0to9,
+                   FracMild10to19,
+                   FracMild20to29,
+                   FracMild30to39,
+                   FracMild40to49,
+                   FracMild50to59,
+                   FracMild60to69,
+                   FracMild70to79,
+                   FracMild80p)
+
+    #ProbDeath=input$ProbDeath  #Probability of dying given critical infection
+  ProbDeath0to9 = input$ProbDeath0to9
+  ProbDeath10to19 = input$ProbDeath10to19
+  ProbDeath20to29 = input$ProbDeath20to29
+  ProbDeath30to39 = input$ProbDeath30to39
+  ProbDeath40to49 = input$ProbDeath40to49
+  ProbDeath50to59 = input$ProbDeath50to59
+  ProbDeath60to69 = input$ProbDeath60to69
+  ProbDeath70to79 = input$ProbDeath70to79
+  ProbDeath80p = input$ProbDeath80p
+  ProbDeath_all = c(ProbDeath0to9,
+                    ProbDeath10to19,
+                    ProbDeath20to29,
+                    ProbDeath30to39,
+                    ProbDeath40to49,
+                    ProbDeath50to59,
+                    ProbDeath60to69,
+                    ProbDeath70to79,
+                    ProbDeath80p)
+  
+  #CFR=ProbDeath*FracCritical/100 #Case fatality rate (fraction of infections resulting in death)
+  CFR0to9 = ProbDeath0to9*FracCritical0to9/100
+  CFR10to19 = ProbDeath10to19*FracCritical10to19/100
+  CFR20to29 = ProbDeath20to29*FracCritical20to29/100
+  CFR30to39 = ProbDeath30to39*FracCritical30to39/100
+  CFR40to49 = ProbDeath40to49*FracCritical40to49/100
+  CFR50to59 = ProbDeath50to59*FracCritical50to59/100
+  CFR60to69 = ProbDeath60to69*FracCritical60to69/100
+  CFR70to79 = ProbDeath70to79*FracCritical70to79/100
+  CFR80p = ProbDeath80p*FracCritical80p/100
+  CFR_all = c(CFR0to9,
+              CFR10to19,
+              CFR20to29,
+              CFR30to39,
+              CFR40to49,
+              CFR50to59,
+              CFR60to69,
+              CFR70to79,
+              CFR80p)
+
+    #TimeICUDeath=input$TimeICUDeath #Time from ICU admission to death, days
+  TimeICUDeath0to9 = input$TimeICUDeath0to9
+  TimeICUDeath10to19 = input$TimeICUDeath10to19
+  TimeICUDeath20to29 = input$TimeICUDeath20to29
+  TimeICUDeath30to39 = input$TimeICUDeath30to39
+  TimeICUDeath40to49 = input$TimeICUDeath40to49
+  TimeICUDeath50to59 = input$TimeICUDeath50to59
+  TimeICUDeath60to69 = input$TimeICUDeath60to69
+  TimeICUDeath70to79 = input$TimeICUDeath70to79
+  TimeICUDeath80p = input$TimeICUDeath80p
+  TimeICUDeath_all = c(TimeICUDeath0to9,
+                       TimeICUDeath10to19,
+                       TimeICUDeath20to29,
+                       TimeICUDeath30to39,
+                       TimeICUDeath40to49,
+                       TimeICUDeath50to59,
+                       TimeICUDeath60to69,
+                       TimeICUDeath70to79,
+                       TimeICUDeath80p)
+  
+  #DurHosp=input$DurHosp #Duration of hospitalization, days
+  DurHosp0to9 = input$DurHosp0to9
+  DurHosp10to19 = input$DurHosp10to19
+  DurHosp20to29 = input$DurHosp20to29
+  DurHosp30to39 = input$DurHosp30to39
+  DurHosp40to49 = input$DurHosp40to49
+  DurHosp50to59 = input$DurHosp50to59
+  DurHosp60to69 = input$DurHosp60to69
+  DurHosp70to79 = input$DurHosp70to79
+  DurHosp80p = input$DurHosp80p
+  DurHosp_all = c(DurHosp0to9,
+                  DurHosp10to19,
+                  DurHosp20to29,
+                  DurHosp30to39,
+                  DurHosp40to49,
+                  DurHosp50to59,
+                  DurHosp60to69,
+                  DurHosp70to79,
+                  DurHosp80p)
+
   N=input$N
   
   # If seasonality is allowed. If there is seasonality, the input beta values correspond to the current values. Must be adjusted to find the true (average) beta values
@@ -95,6 +268,7 @@ GetModelParams = function(input){
   #  )
   
   # The transmission rates are changed from values per time to values per capita per time
+  
   b1=input$b1/(N*seas0)
   b2=input$b2/(N*seas0)
   b3=input$b3/(N*seas0)
@@ -119,9 +293,15 @@ GetModelParams = function(input){
     be = 0 #Transmission rate (pre-symptomatic)
   }
 
-  pClin=c(IncubPeriod=IncubPeriod, DurMildInf=DurMildInf,FracMild=FracMild, FracSevere=FracSevere,FracCritical=FracCritical,CFR=CFR,TimeICUDeath=TimeICUDeath,DurHosp=DurHosp,FracAsym=FracAsym,PresymPeriod=PresymPeriod,DurAsym=DurAsym)
+  pClin=list(IncubPeriod=IncubPeriod, prop_all=prop_all, 
+          DurMildInf_all=DurMildInf_all,FracMild_all=FracMild_all, 
+          FracSevere_all=FracSevere_all,
+          FracCritical_all=FracCritical_all,CFR_all=CFR_all,
+          TimeICUDeath_all=TimeICUDeath_all,DurHosp_all=DurHosp_all,
+          FracAsym=FracAsym,PresymPeriod=PresymPeriod,DurAsym=DurAsym)
   
   # Turn these clinical parameters into the rate constants of the model
+  
   pModel=GetParams_SEIR(pClin)
   
   pModel=c(be=be,b0=b0,b1=b1,b2=b2,b3=b3,pModel)
@@ -146,23 +326,52 @@ GetParams_SEIR = function(pClin){
     a1=min(10^6,1/PresymPeriod) #presymptomatic period of transmission
     a0=min(10^6,(IncubPeriod-PresymPeriod)^(-1)) # true latent period, avoid infinity when no presymptomatic phase
     
+    g1_all <- vector(mode="numeric", length=length(prop_all))
+    g2_all <- vector(mode="numeric", length=length(prop_all))
+    g3_all <- vector(mode="numeric", length=length(prop_all))
+    p1_all <- vector(mode="numeric", length=length(prop_all))
+    p2_all <- vector(mode="numeric", length=length(prop_all))
+    u_all <- vector(mode="numeric", length=length(prop_all))
+
+    for (i in 1:length(prop_all)) {
+      g1_all[i]=(1/DurMildInf_all[i])*FracMild_all[i]
+      p1_all[i]=(1/DurMildInf_all[i])-g1_all[i]
+      
+      if (FracSevere_all[i]+FracCritical_all[i] == 0){
+        p2_all[i] = 0
+      } else {
+        p2_all[i]=(1/DurHosp_all[i])*(FracCritical_all[i]/(FracSevere_all[i]+FracCritical_all[i]))
+      }
+      g2_all[i]=(1/DurHosp_all[i])-p2_all[i]
+      
+      if(FracCritical_all[i]==0){
+        u_all[i]=0
+      }else{
+        u_all[i]=(1/TimeICUDeath_all[i])*(CFR_all[i]/FracCritical_all[i])
+      }
+      
+      g3_all[i]=(1/TimeICUDeath_all[i])-u_all[i]
+    }
+    
+    #TODO: change to get separate returns based on age groups
+    g1 <- 0
+    g2 <- 0
+    g3 <- 0
+    p1 <- 0
+    p2 <- 0
+    u <- 0
+    for (i in 1:length(prop_all)) {
+      g1 = g1 + prop_all[i]*g1_all[i]
+      g2 = g2 + prop_all[i]*g2_all[i]
+      g3 = g3 + prop_all[i]*g3_all[i]
+      p1 = p1 + prop_all[i]*p1_all[i]
+      p2 = p2 + prop_all[i]*p2_all[i]
+      u = u + prop_all[i]*u_all[i]
+    }
+
     f=FracAsym
     
     g0=1/DurAsym
-    
-    g1=(1/DurMildInf)*FracMild
-    p1=(1/DurMildInf)-g1
-    
-    p2=(1/DurHosp)*(FracCritical/(FracSevere+FracCritical))
-    g2=(1/DurHosp)-p2
-    
-    if(FracCritical==0){
-      u=0
-    }else{
-      u=(1/TimeICUDeath)*(CFR/FracCritical)
-    }
-    
-    g3=(1/TimeICUDeath)-u
     
     return(c(a0=a0,a1=a1,f=f,g0=g0,g1=g1,g2=g2,g3=g3,p1=p1,p2=p2,u=u))
   })
@@ -178,7 +387,7 @@ GetParams_SEIR = function(pClin){
 # OUTPUT: Ro
 
 GetRo_SEIR = function(p,N){
-  
+
   with(as.list(p),{
     
     Ro=N*((be/a1)+f*(b0/g0)+(1-f)*((b1/(p1+g1))+(p1/(p1+g1))*(b2/(p2+g2)+ (p2/(p2+g2))*(b3/(u+g3)))))
